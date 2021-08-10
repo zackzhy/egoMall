@@ -1,17 +1,16 @@
 import request from '@/utils/request'
 
-export function fetchList(parentId, params) {
+export function fetchList() {
   return request({
-    url: '/menu/list/' + parentId,
+    url: '/user/allAddressInfo',
     method: 'get',
-    params: params
   })
 }
 
-export function deleteMenu(id) {
+export function deleteAddress(customerAddrId) {
   return request({
-    url: '/menu/delete/' + id,
-    method: 'post'
+    url: '/user/address' + customerAddrId,
+    method: 'delete'
   })
 }
 

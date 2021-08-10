@@ -42,50 +42,50 @@
         <el-table-column label="角色名称" align="center">
           <template slot-scope="scope">{{scope.row.name}}</template>
         </el-table-column>
-        <el-table-column label="描述" align="center">
-          <template slot-scope="scope">{{scope.row.description}}</template>
-        </el-table-column>
-        <el-table-column label="用户数"  width="100" align="center">
-          <template slot-scope="scope">{{scope.row.adminCount}}</template>
-        </el-table-column>
-        <el-table-column label="添加时间" width="160" align="center">
-          <template slot-scope="scope">{{scope.row.createTime | formatDateTime}}</template>
-        </el-table-column>
-        <el-table-column label="是否启用" width="140" align="center">
-          <template slot-scope="scope">
-            <el-switch
-              @change="handleStatusChange(scope.$index, scope.row)"
-              :active-value="1"
-              :inactive-value="0"
-              v-model="scope.row.status">
-            </el-switch>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="160" align="center">
-          <template slot-scope="scope">
-            <el-row>
-              <el-button size="mini"
-                         type="text"
-                         @click="handleSelectMenu(scope.$index, scope.row)">分配菜单
-              </el-button>
-              <el-button size="mini"
-                         type="text"
-                         @click="handleSelectResource(scope.$index, scope.row)">分配资源
-              </el-button>
-            </el-row>
-            <el-row>
-            <el-button size="mini"
-                       type="text"
-                       @click="handleUpdate(scope.$index, scope.row)">
-              编辑
-            </el-button>
-            <el-button size="mini"
-                       type="text"
-                       @click="handleDelete(scope.$index, scope.row)">删除
-            </el-button>
-            </el-row>
-          </template>
-        </el-table-column>
+<!--        <el-table-column label="描述" align="center">-->
+<!--          <template slot-scope="scope">{{scope.row.description}}</template>-->
+<!--        </el-table-column>-->
+<!--        <el-table-column label="用户数"  width="100" align="center">-->
+<!--          <template slot-scope="scope">{{scope.row.adminCount}}</template>-->
+<!--        </el-table-column>-->
+<!--        <el-table-column label="添加时间" width="160" align="center">-->
+<!--          <template slot-scope="scope">{{scope.row.createTime | formatDateTime}}</template>-->
+<!--        </el-table-column>-->
+<!--        <el-table-column label="是否启用" width="140" align="center">-->
+<!--          <template slot-scope="scope">-->
+<!--            <el-switch-->
+<!--              @change="handleStatusChange(scope.$index, scope.row)"-->
+<!--              :active-value="1"-->
+<!--              :inactive-value="0"-->
+<!--              v-model="scope.row.status">-->
+<!--            </el-switch>-->
+<!--          </template>-->
+<!--        </el-table-column>-->
+<!--        <el-table-column label="操作" width="160" align="center">-->
+<!--          <template slot-scope="scope">-->
+<!--            <el-row>-->
+<!--              <el-button size="mini"-->
+<!--                         type="text"-->
+<!--                         @click="handleSelectMenu(scope.$index, scope.row)">分配菜单-->
+<!--              </el-button>-->
+<!--              <el-button size="mini"-->
+<!--                         type="text"-->
+<!--                         @click="handleSelectResource(scope.$index, scope.row)">分配资源-->
+<!--              </el-button>-->
+<!--            </el-row>-->
+<!--            <el-row>-->
+<!--            <el-button size="mini"-->
+<!--                       type="text"-->
+<!--                       @click="handleUpdate(scope.$index, scope.row)">-->
+<!--              编辑-->
+<!--            </el-button>-->
+<!--            <el-button size="mini"-->
+<!--                       type="text"-->
+<!--                       @click="handleDelete(scope.$index, scope.row)">删除-->
+<!--            </el-button>-->
+<!--            </el-row>-->
+<!--          </template>-->
+<!--        </el-table-column>-->
       </el-table>
     </div>
     <div class="pagination-container">

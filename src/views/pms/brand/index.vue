@@ -37,54 +37,15 @@
                 @selection-change="handleSelectionChange"
                 v-loading="listLoading"
                 border>
-        <el-table-column type="selection" width="60" align="center"></el-table-column>
+<!--        <el-table-column type="selection" width="60" align="center"></el-table-column>-->
         <el-table-column label="编号" width="100" align="center">
-          <template slot-scope="scope">{{scope.row.id}}</template>
+          <template slot-scope="scope">{{scope.row.supplierId}}</template>
         </el-table-column>
-        <el-table-column label="品牌名称" align="center">
-          <template slot-scope="scope">{{scope.row.name}}</template>
+        <el-table-column label="品牌名称" width="370" align="center">
+          <template slot-scope="scope">{{scope.row.supplierName}}</template>
         </el-table-column>
-        <el-table-column label="品牌首字母" width="100" align="center">
-          <template slot-scope="scope">{{scope.row.firstLetter}}</template>
-        </el-table-column>
-        <el-table-column label="排序" width="100" align="center">
-          <template slot-scope="scope">{{scope.row.sort}}</template>
-        </el-table-column>
-        <el-table-column label="品牌制造商" width="100" align="center">
-          <template slot-scope="scope">
-            <el-switch
-              @change="handleFactoryStatusChange(scope.$index, scope.row)"
-              :active-value="1"
-              :inactive-value="0"
-              v-model="scope.row.factoryStatus">
-            </el-switch>
-          </template>
-        </el-table-column>
-        <el-table-column label="是否显示" width="100" align="center">
-          <template slot-scope="scope">
-            <el-switch
-              @change="handleShowStatusChange(scope.$index, scope.row)"
-              :active-value="1"
-              :inactive-value="0"
-              v-model="scope.row.showStatus">
-            </el-switch>
-          </template>
-        </el-table-column>
-        <el-table-column label="相关" width="220" align="center">
-          <template slot-scope="scope">
-            <span>商品：</span>
-            <el-button
-              size="mini"
-              type="text"
-              @click="getProductList(scope.$index, scope.row)">100
-            </el-button>
-            <span>评价：</span>
-            <el-button
-              size="mini"
-              type="text"
-              @click="getProductCommentList(scope.$index, scope.row)">1000
-            </el-button>
-          </template>
+        <el-table-column label="品牌地址" align="center">
+          <template slot-scope="scope">{{scope.row.address}}</template>
         </el-table-column>
         <el-table-column label="操作" width="200" align="center">
           <template slot-scope="scope">
@@ -101,47 +62,81 @@
         </el-table-column>
       </el-table>
     </div>
-    <div class="batch-operate-container">
-      <el-select
-        size="small"
-        v-model="operateType" placeholder="批量操作">
-        <el-option
-          v-for="item in operates"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value">
-        </el-option>
-      </el-select>
-      <el-button
-        style="margin-left: 20px"
-        class="search-button"
-        @click="handleBatchOperate()"
-        type="primary"
-        size="small">
-        确定
-      </el-button>
-    </div>
+<!--    <div class="batch-operate-container">-->
+<!--      <el-select-->
+<!--        size="small"-->
+<!--        v-model="operateType" placeholder="批量操作">-->
+<!--        <el-option-->
+<!--          v-for="item in operates"-->
+<!--          :key="item.value"-->
+<!--          :label="item.label"-->
+<!--          :value="item.value">-->
+<!--        </el-option>-->
+<!--      </el-select>-->
+<!--      <el-button-->
+<!--        style="margin-left: 20px"-->
+<!--        class="search-button"-->
+<!--        @click="handleBatchOperate()"-->
+<!--        type="primary"-->
+<!--        size="small">-->
+<!--        确定-->
+<!--      </el-button>-->
+<!--    </div>-->
     <div class="pagination-container">
       <el-pagination
         background
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         layout="total, sizes,prev, pager, next,jumper"
-        :page-size="listQuery.pageSize"
+        :page-size="5"
         :page-sizes="[5,10,15]"
         :current-page.sync="listQuery.pageNum"
         :total="total">
       </el-pagination>
     </div>
+
+    <el-dialog
+      :title="isEdit?'编辑品牌信息':'添加品牌信息'"
+      :visible.sync="dialogVisible"
+      width="40%">
+      <el-form :model="brandInfo"
+               label-width="150px" size="small">
+
+        <el-form-item label="品牌名称">
+          <el-input v-model="brandInfo.supplierName" style="width: 250px"></el-input>
+        </el-form-item>
+        <el-form-item label="品牌地址">
+          <el-input v-model="brandInfo.address" style="width: 250px"></el-input>
+        </el-form-item>
+
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false" size="small">取 消</el-button>
+        <el-button type="primary" @click="handleDialogConfirm()" size="small">确 定</el-button>
+      </span>
+    </el-dialog>
+
   </div>
 </template>
 <script>
-  import {fetchList, updateShowStatus, updateFactoryStatus, deleteBrand} from '@/api/brand'
+  import {fetchList, updateShowStatus, updateFactoryStatus,
+    deleteBrand,updateBrandInfo,createBrandInfo} from '@/api/brand'
+
+  const defaultBrandInfo = {
+    supplierId: null,
+    supplierName: null,
+    address: null,
+  };
 
   export default {
     name: 'brandList',
     data() {
       return {
+        totalList: [],
+        isEdit: false,
+        dialogVisible: false,
+        brandInfo: Object.assign({}, defaultBrandInfo),
+
         operates: [
           {
             label: "显示品牌",
@@ -156,7 +151,8 @@
         listQuery: {
           keyword: null,
           pageNum: 1,
-          pageSize: 10
+          pageSize: 5,
+          currentIndex: 0,
         },
         list: null,
         total: null,
@@ -170,34 +166,37 @@
     methods: {
       getList() {
         this.listLoading = true;
-        fetchList(this.listQuery).then(response => {
+        fetchList().then(response => {
           this.listLoading = false;
-          this.list = response.data.list;
-          this.total = response.data.total;
-          this.totalPage = response.data.totalPage;
-          this.pageSize = response.data.pageSize;
+          this.totalList = response.data.data;
+          this.list = this.totalList.slice(this.listQuery.currentIndex,this.listQuery.currentIndex + this.listQuery.pageSize)
+
+          this.total = response.data.data.length;
+          // this.totalPage = response.data.totalPage;
+          // this.pageSize = response.data.pageSize;
         });
       },
       handleSelectionChange(val) {
         this.multipleSelection = val;
       },
       handleUpdate(index, row) {
-        this.$router.push({path: '/pms/updateBrand', query: {id: row.id}})
+        // this.$router.push({path: '/pms/updateBrand', query: {id: row.id}})
+        this.dialogVisible = true;
+        this.isEdit = true;
+        this.brandInfo = Object.assign({}, row);
       },
       handleDelete(index, row) {
-        this.$confirm('是否要删除该品牌', '提示', {
+        this.$confirm('是否要进行删除操作?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          deleteBrand(row.id).then(response => {
-            this.$message({
-              message: '删除成功',
-              type: 'success',
-              duration: 1000
-            });
-            this.getList();
-          });
+          deleteBrand(row.supplierId).then(res=>{
+            if (res.data.code === '00000') {
+              this.$message.success(res.data.message)
+              this.getList();
+            }
+          })
         });
       },
       getProductList(index, row) {
@@ -246,11 +245,16 @@
       handleSizeChange(val) {
         this.listQuery.pageNum = 1;
         this.listQuery.pageSize = val;
-        this.getList();
+        let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
+        this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
+        this.listQuery.currentIndex=currentIndex
       },
       handleCurrentChange(val) {
         this.listQuery.pageNum = val;
-        this.getList();
+        //this.getList();
+        let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
+        this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
+        this.listQuery.currentIndex=currentIndex
       },
       searchBrandList() {
         this.listQuery.pageNum = 1;
@@ -296,13 +300,43 @@
         });
       },
       addBrand() {
-        this.$router.push({path: '/pms/addBrand'})
-      }
+        this.dialogVisible = true;
+        this.isEdit = false;
+        this.brandInfo = Object.assign({}, defaultBrandInfo);
+      },
+
+      handleDialogConfirm() {
+        this.$confirm('是否要确认?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          if (this.isEdit) {
+            updateBrandInfo(this.brandInfo.supplierId,this.brandInfo.supplierName,this.brandInfo.address).then(response => {
+              if (response.data.code === '00000') {
+                this.$message.success(response.data.message)
+                this.getList();
+              }
+              this.dialogVisible = false;
+            })
+          } else {
+            createBrandInfo(this.brandInfo.supplierName,this.brandInfo.address).then(response => {
+              if (response.data.code === '00000') {
+                this.$message.success(response.data.message)
+                this.getList();
+              }
+              this.dialogVisible = false;
+            })
+          }
+        })
+      },
     }
   }
 </script>
 <style rel="stylesheet/scss" lang="scss" scoped>
-
+.pagination-container{
+  margin-bottom: 26px;
+}
 
 </style>
 

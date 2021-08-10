@@ -4,7 +4,7 @@
     <breadcrumb></breadcrumb>
     <el-dropdown class="avatar-container" trigger="click">
       <div class="avatar-wrapper">
-        <img class="user-avatar" :src="avatar">
+        <img class="user-avatar" src="@/assets/images/apple.jpg">
         <i class="el-icon-caret-bottom"></i>
       </div>
       <el-dropdown-menu class="user-dropdown" slot="dropdown">
@@ -43,7 +43,9 @@ export default {
     },
     logout() {
       this.$store.dispatch('LogOut').then(() => {
+        window.sessionStorage.clear()
         location.reload() // 为了重新实例化vue-router对象 避免bug
+        //this.$router.replace({path: '/login'})
       })
     }
   }
@@ -65,7 +67,7 @@ export default {
     position: absolute;
     right: 90px;
     top: 16px;
-    color: red;
+    color: #ff0000;
   }
   .avatar-container {
     height: 50px;

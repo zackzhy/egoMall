@@ -1,35 +1,32 @@
-import request from '@/utils/request'
+import request from '@/utils/request';
+import qs from 'qs';
 
-export function login(username, password) {
+export function login(account, password) {
   return request({
-    url: '/admin/login',
+    url: '/user/login',
     method: 'post',
-    data: {
-      username,
-      password
-    }
+    data: qs.stringify({account,password})
   })
 }
 
 export function getInfo() {
   return request({
-    url: '/admin/info',
+    url: '/user/info',
     method: 'get',
   })
 }
 
 export function logout() {
   return request({
-    url: '/admin/logout',
+    url: '/user/logout',
     method: 'post'
   })
 }
 
-export function fetchList(params) {
+export function fetchList() {
   return request({
-    url: '/admin/list',
+    url: '/user',
     method: 'get',
-    params: params
   })
 }
 
@@ -57,10 +54,12 @@ export function updateStatus(id, params) {
   })
 }
 
-export function deleteAdmin(id) {
+
+//等待接口
+export function deleteAdmin(customerId) {
   return request({
-    url: '/admin/delete/' + id,
-    method: 'post'
+    url: '/user/delete' + customerId,
+    method: 'delete',
   })
 }
 

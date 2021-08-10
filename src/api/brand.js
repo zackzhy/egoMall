@@ -1,11 +1,37 @@
 import request from '@/utils/request'
-export function fetchList(params) {
+export function fetchList() {
   return request({
-    url:'/brand/list',
+    url:'/goods/allSupplierInfo',
     method:'get',
-    params:params
   })
 }
+
+//等待接口
+export function deleteBrand(supplierId) {
+  return request({
+    url:'/goods/supplier/'+supplierId,
+    method:'delete',
+  })
+}
+
+//等待接口
+export function createBrandInfo(supplierName, address) {
+  return request({
+    url:'/goods/supplier/add',
+    method:'post',
+    params: {supplierName, address}
+  })
+}
+
+//等待接口
+export function updateBrandInfo(supplierId, supplierName, address) {
+  return request({
+    url:'/goods/supplier/update',
+    method:'post',
+    params: {supplierId, supplierName, address}
+  })
+}
+
 export function createBrand(data) {
   return request({
     url:'/brand/create',
@@ -26,13 +52,6 @@ export function updateFactoryStatus(data) {
     url:'/brand/update/factoryStatus',
     method:'post',
     data:data
-  })
-}
-
-export function deleteBrand(id) {
-  return request({
-    url:'/brand/delete/'+id,
-    method:'get',
   })
 }
 

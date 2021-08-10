@@ -29,58 +29,48 @@
     <el-card class="operate-container" shadow="never">
       <i class="el-icon-tickets"></i>
       <span>数据列表</span>
-      <el-button size="mini" class="btn-add" @click="handleAdd()" style="margin-left: 20px">添加</el-button>
+<!--      <el-button size="mini" class="btn-add" @click="handleAdd()" style="margin-left: 20px">添加</el-button>-->
     </el-card>
     <div class="table-container">
       <el-table ref="adminTable"
                 :data="list"
                 style="width: 100%;"
                 v-loading="listLoading" border>
-        <el-table-column label="编号" width="100" align="center">
-          <template slot-scope="scope">{{scope.row.id}}</template>
+        <el-table-column label="编号" width="50" align="center">
+          <template slot-scope="scope">{{scope.row.customerId}}</template>
         </el-table-column>
-        <el-table-column label="帐号" align="center">
-          <template slot-scope="scope">{{scope.row.username}}</template>
+        <el-table-column label="真实姓名" align="center">
+          <template slot-scope="scope">{{scope.row.customerName}}</template>
         </el-table-column>
-        <el-table-column label="姓名" align="center">
-          <template slot-scope="scope">{{scope.row.nickName}}</template>
+        <el-table-column label="性别" width="180" align="center">
+          <template slot-scope="scope">{{scope.row.gender}}</template>
         </el-table-column>
-        <el-table-column label="邮箱" align="center">
-          <template slot-scope="scope">{{scope.row.email}}</template>
+        <el-table-column label="证件类型" width="50" align="center">
+          <template slot-scope="scope">{{scope.row.identityCardType}}</template>
         </el-table-column>
-        <el-table-column label="添加时间" width="160" align="center">
-          <template slot-scope="scope">{{scope.row.createTime | formatDateTime}}</template>
+        <el-table-column label="证件号码" width="180" align="center">
+          <template slot-scope="scope">{{scope.row.identityCardNo}}</template>
         </el-table-column>
-        <el-table-column label="最后登录" width="160" align="center">
-          <template slot-scope="scope">{{scope.row.loginTime | formatDateTime}}</template>
+        <el-table-column label="登录名" align="center">
+          <template slot-scope="scope">{{scope.row.loginName}}</template>
         </el-table-column>
-        <el-table-column label="是否启用" width="140" align="center">
-          <template slot-scope="scope">
-            <el-switch
-              @change="handleStatusChange(scope.$index, scope.row)"
-              :active-value="1"
-              :inactive-value="0"
-              v-model="scope.row.status">
-            </el-switch>
-          </template>
+        <el-table-column label="电话号码" width="120" align="center">
+          <template slot-scope="scope">{{scope.row.mobilePhone}}</template>
         </el-table-column>
-        <el-table-column label="操作" width="180" align="center">
-          <template slot-scope="scope">
-            <el-button size="mini"
-                       type="text"
-                       @click="handleSelectRole(scope.$index, scope.row)">分配角色
-            </el-button>
-            <el-button size="mini"
-                       type="text"
-                       @click="handleUpdate(scope.$index, scope.row)">
-              编辑
-            </el-button>
-            <el-button size="mini"
-                       type="text"
-                       @click="handleDelete(scope.$index, scope.row)">删除
-            </el-button>
-          </template>
+        <el-table-column label="积分" width="60" align="center">
+          <template slot-scope="scope">{{scope.row.userPoint}}</template>
         </el-table-column>
+<!--        <el-table-column label="" width="140" align="center">-->
+<!--          <template slot-scope="scope">-->
+<!--            <el-switch-->
+<!--              @change="handleStatusChange(scope.$index, scope.row)"-->
+<!--              :active-value="1"-->
+<!--              :inactive-value="0"-->
+<!--              v-model="scope.row.status">-->
+<!--            </el-switch>-->
+<!--          </template>-->
+<!--        </el-table-column>-->
+
       </el-table>
     </div>
     <div class="pagination-container">
@@ -91,7 +81,7 @@
         layout="total, sizes,prev, pager, next,jumper"
         :current-page.sync="listQuery.pageNum"
         :page-size="listQuery.pageSize"
-        :page-sizes="[10,15,20]"
+        :page-sizes="[5,10,15]"
         :total="total">
       </el-pagination>
     </div>
@@ -103,7 +93,7 @@
                ref="adminForm"
                label-width="150px" size="small">
         <el-form-item label="帐号：">
-          <el-input v-model="admin.username" style="width: 250px"></el-input>
+          <el-input v-model="admin.customerName" style="width: 250px"></el-input>
         </el-form-item>
         <el-form-item label="姓名：">
           <el-input v-model="admin.nickName" style="width: 250px"></el-input>
@@ -158,22 +148,25 @@
 
   const defaultListQuery = {
     pageNum: 1,
-    pageSize: 10,
-    keyword: null
+    pageSize: 5,
+    keyword: null,
+    currentIndex: 0,
   };
   const defaultAdmin = {
-    id: null,
-    username: null,
-    password: null,
-    nickName: null,
-    email: null,
-    note: null,
-    status: 1
+    customerId: null,
+    customerName: null,
+    gender: null,
+    identityCardNo: null,
+    identityCardType: null,
+    loginName: null,
+    mobilePhone: null,
+    userPoint: null,
   };
   export default {
     name: 'adminList',
     data() {
       return {
+        totalList: [],
         listQuery: Object.assign({}, defaultListQuery),
         list: null,
         total: null,
@@ -189,7 +182,7 @@
     },
     created() {
       this.getList();
-      this.getAllRoleList();
+      //this.getAllRoleList();
     },
     filters: {
       formatDateTime(time) {
@@ -211,11 +204,17 @@
       handleSizeChange(val) {
         this.listQuery.pageNum = 1;
         this.listQuery.pageSize = val;
-        this.getList();
+        //this.getList();
+        let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
+        this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
+        this.listQuery.currentIndex=currentIndex
       },
       handleCurrentChange(val) {
         this.listQuery.pageNum = val;
-        this.getList();
+        //this.getList();
+        let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
+        this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
+        this.listQuery.currentIndex=currentIndex
       },
       handleAdd() {
         this.dialogVisible = true;
@@ -248,13 +247,12 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          deleteAdmin(row.id).then(response => {
-            this.$message({
-              type: 'success',
-              message: '删除成功!'
-            });
-            this.getList();
-          });
+          deleteAdmin(row.customerId).then(res => {
+            if (res.data.code === '00000') {
+              this.$message.success(res.data.message)
+              this.getList();
+            }
+          })
         });
       },
       handleUpdate(index, row) {
@@ -314,10 +312,12 @@
       },
       getList() {
         this.listLoading = true;
-        fetchList(this.listQuery).then(response => {
+        fetchList().then(response => {
           this.listLoading = false;
-          this.list = response.data.list;
-          this.total = response.data.total;
+          this.totalList = response.data.data;
+          this.list = this.totalList.slice(this.listQuery.currentIndex, this.listQuery.currentIndex + this.listQuery.pageSize)
+
+          this.total = response.data.data.length;
         });
       },
       getAllRoleList() {
