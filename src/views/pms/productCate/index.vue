@@ -70,7 +70,7 @@
 
 <script>
 import {fetchList, deleteProductCate, updateShowStatus, updateNavStatus,
-  deleteCategory,updateProCate,createProCate} from '@/api/productCate'
+  deleteCategory,updateProCate,createProCate,getTotal} from '@/api/productCate'
 
 const defaultListQuery = {
   keyword: null,
@@ -131,7 +131,7 @@ export default {
     },
     getList() {
       this.listLoading = true;
-      fetchList().then(response => {
+      fetchList(this.listQuery.pageNum, this.listQuery.pageSize).then(response => {
         this.listLoading = false;
         this.totalList = response.data.data;
         this.list = this.totalList.slice(this.listQuery.currentIndex, this.listQuery.currentIndex + defaultListQuery.pageSize)

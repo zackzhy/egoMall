@@ -80,7 +80,7 @@
               @change="handleDateChange"
               :picker-options="pickerOptions">
             </el-date-picker>
-            <div>
+            <div class="echarsGraph">
               <ve-line
                 :data="chartData"
                 :legend-visible="false"
@@ -96,7 +96,7 @@
 </template>
 
 <script>
-import {fetchList} from '@/api/order'
+import {fetchList,getTotal} from '@/api/order'
 import {str2Date} from '@/utils/date';
 import app_main_bg from '@/assets/images/app_main_bg.jpg';
 import img_home_order from '@/assets/images/home_order.png';
@@ -107,21 +107,6 @@ import {getDate} from "../../utils/date";
 const DATA_FROM_BACKEND = {
   columns: ['date', 'orderCount', 'orderAmount'],
   rows: [
-    {date: '2018-11-01', orderCount: 10, orderAmount: 1093},
-    {date: '2018-11-02', orderCount: 20, orderAmount: 2230},
-    {date: '2018-11-03', orderCount: 33, orderAmount: 3623},
-    {date: '2018-11-04', orderCount: 50, orderAmount: 6423},
-    {date: '2018-11-05', orderCount: 80, orderAmount: 8492},
-    {date: '2018-11-06', orderCount: 60, orderAmount: 6293},
-    {date: '2018-11-07', orderCount: 20, orderAmount: 2293},
-    {date: '2018-11-08', orderCount: 60, orderAmount: 6293},
-    {date: '2018-11-09', orderCount: 50, orderAmount: 5293},
-    {date: '2018-11-10', orderCount: 30, orderAmount: 3293},
-    {date: '2018-11-11', orderCount: 20, orderAmount: 2293},
-    {date: '2018-11-12', orderCount: 80, orderAmount: 8293},
-    {date: '2018-11-13', orderCount: 100, orderAmount: 10293},
-    {date: '2018-11-14', orderCount: 10, orderAmount: 1293},
-    {date: '2018-11-15', orderCount: 40, orderAmount: 4293}
   ]
 };
 export default {
@@ -177,7 +162,8 @@ export default {
       img_home_order,
       img_home_today_amount,
       img_home_yesterday_amount,
-      orderList: []
+      orderList: [],
+      total: 0
     }
   },
   created() {
@@ -187,17 +173,22 @@ export default {
   },
   methods: {
     getOrderList(){
-      fetchList().then(response => {
-        this.loading = true;
-        let originalOrderData = response.data.data;
-        for (let i = 0; i < originalOrderData; i++) {
-          let dateJson = new Date(originalOrderData[i].payTime).toJSON();
-          let datetime = new Date(+new Date(dateJson) + 8 * 3600 * 1000).toISOString().replace(/T/g, ' ').replace(/\.[\d]{3}Z/, '');
-          originalOrderData[i].payTime = datetime
+      getTotal().then(res => {
+        if (res.data.code === '00000') {
+          this.total = res.data.data
+          fetchList(1,this.total).then(response => {
+            this.loading = true;
+            let originalOrderData = response.data.data;
+            for (let i = 0; i < originalOrderData; i++) {
+              let dateJson = new Date(originalOrderData[i].payTime).toJSON();
+              let datetime = new Date(+new Date(dateJson) + 8 * 3600 * 1000).toISOString().replace(/T/g, ' ').replace(/\.[\d]{3}Z/, '');
+              originalOrderData[i].payTime = datetime
+            }
+            this.orderList = originalOrderData;
+          });
         }
-        this.orderList = originalOrderData;
-        console.log("length:"+this.orderList.length)
       });
+
     },
     handleDateChange() {
       this.getData();
@@ -235,8 +226,8 @@ export default {
         for(let i=0;i<this.orderList.length;i++)
         {
           let payDate=new Date(this.orderList[i].payTime)
-          let tWeekTime=payDate.getTime()-1000 * 60 * 60 * 24 * payDate.getDay()
-          let tMonthTime=payDate.getTime()-1000 * 60 * 60 * 24 * payDate.getDate()
+          let tWeekTime=end.getTime()-1000 * 60 * 60 * 24 * payDate.getDay()
+          let tMonthTime=end.getTime()-1000 * 60 * 60 * 24 * payDate.getDate()
           let lWeekTime=tWeekTime-1000 * 60 * 60 * 24 * 7
           let lMonthTime=tMonthTime - 1000 * 60 * 60 * 24 * 30
 
@@ -393,6 +384,10 @@ export default {
 .statistics-layout {
   margin-top: 20px;
   border: 1px solid #DCDFE6;
+}
+
+.echarsGraph{
+  width: 100%;
 }
 
 .mine-layout {

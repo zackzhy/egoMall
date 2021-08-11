@@ -1,25 +1,25 @@
 <template> 
   <div class="app-container">
-    <el-card class="filter-container" shadow="never">
-        <div>
-          <i class="el-icon-search"></i>
-          <span>筛选搜索</span>
-          <el-button
-            style="float: right"
-            @click="searchBrandList()"
-            type="primary"
-            size="small">
-            查询结果
-          </el-button>
-        </div>
-        <div style="margin-top: 15px">
-          <el-form :inline="true" :model="listQuery" size="small" label-width="140px">
-            <el-form-item label="输入搜索：">
-              <el-input style="width: 203px" v-model="listQuery.keyword" placeholder="品牌名称/关键字"></el-input>
-            </el-form-item>
-          </el-form>
-        </div>
-    </el-card>
+<!--    <el-card class="filter-container" shadow="never">-->
+<!--        <div>-->
+<!--          <i class="el-icon-search"></i>-->
+<!--          <span>筛选搜索</span>-->
+<!--          <el-button-->
+<!--            style="float: right"-->
+<!--            @click="searchBrandList()"-->
+<!--            type="primary"-->
+<!--            size="small">-->
+<!--            查询结果-->
+<!--          </el-button>-->
+<!--        </div>-->
+<!--        <div style="margin-top: 15px">-->
+<!--          <el-form :inline="true" :model="listQuery" size="small" label-width="140px">-->
+<!--            <el-form-item label="输入搜索：">-->
+<!--              <el-input style="width: 203px" v-model="listQuery.keyword" placeholder="品牌名称/关键字"></el-input>-->
+<!--            </el-form-item>-->
+<!--          </el-form>-->
+<!--        </div>-->
+<!--    </el-card>-->
     <el-card class="operate-container" shadow="never">
       <i class="el-icon-tickets"></i>
       <span>数据列表</span>
@@ -88,8 +88,8 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         layout="total, sizes,prev, pager, next,jumper"
-        :page-size="5"
-        :page-sizes="[5,10,15]"
+        :page-size="listQuery.pageSize"
+        :page-sizes="[8,10,15]"
         :current-page.sync="listQuery.pageNum"
         :total="total">
       </el-pagination>
@@ -120,7 +120,7 @@
 </template>
 <script>
   import {fetchList, updateShowStatus, updateFactoryStatus,
-    deleteBrand,updateBrandInfo,createBrandInfo} from '@/api/brand'
+    deleteBrand,updateBrandInfo,createBrandInfo,getTotal} from '@/api/brand'
 
   const defaultBrandInfo = {
     supplierId: null,
@@ -151,7 +151,7 @@
         listQuery: {
           keyword: null,
           pageNum: 1,
-          pageSize: 5,
+          pageSize: 8,
           currentIndex: 0,
         },
         list: null,
@@ -166,14 +166,19 @@
     methods: {
       getList() {
         this.listLoading = true;
-        fetchList().then(response => {
+        fetchList(this.listQuery.pageNum, this.listQuery.pageSize).then(response => {
           this.listLoading = false;
-          this.totalList = response.data.data;
-          this.list = this.totalList.slice(this.listQuery.currentIndex,this.listQuery.currentIndex + this.listQuery.pageSize)
+          this.list = response.data.data;
+          // this.list = this.totalList.slice(this.listQuery.currentIndex,this.listQuery.currentIndex + this.listQuery.pageSize)
 
-          this.total = response.data.data.length;
+          //this.total = response.data.data.length;
           // this.totalPage = response.data.totalPage;
           // this.pageSize = response.data.pageSize;
+        });
+        getTotal().then(res => {
+          if (res.data.code === '00000') {
+            this.total = res.data.data
+          }
         });
       },
       handleSelectionChange(val) {
@@ -245,16 +250,17 @@
       handleSizeChange(val) {
         this.listQuery.pageNum = 1;
         this.listQuery.pageSize = val;
-        let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
-        this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
-        this.listQuery.currentIndex=currentIndex
+        this.getList()
+        // let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
+        // this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
+        // this.listQuery.currentIndex=currentIndex
       },
       handleCurrentChange(val) {
         this.listQuery.pageNum = val;
-        //this.getList();
-        let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
-        this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
-        this.listQuery.currentIndex=currentIndex
+        this.getList();
+        // let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
+        // this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
+        // this.listQuery.currentIndex=currentIndex
       },
       searchBrandList() {
         this.listQuery.pageNum = 1;

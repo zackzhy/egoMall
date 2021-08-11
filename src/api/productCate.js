@@ -1,16 +1,25 @@
 import request from '@/utils/request'
 
-export function fetchList() {
+export function fetchList(pageNum, pageSize) {
   return request({
     url: '/goods/category',
-    method: 'get'
+    method: 'get',
+    params: {pageNum, pageSize}
   })
 }
 
-export function fetchTypeList() {
+export function getTypeTotal() {
+  return request({
+    url: '/goods/type/sum',
+    method: 'get',
+  })
+}
+
+export function fetchTypeList(pageNum, pageSize) {
   return request({
     url: '/goods/type',
-    method: 'get'
+    method: 'get',
+    params: {pageNum, pageSize}
   })
 }
 

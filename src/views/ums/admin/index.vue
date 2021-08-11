@@ -1,31 +1,31 @@
 <template> 
   <div class="app-container">
-    <el-card class="filter-container" shadow="never">
-      <div>
-        <i class="el-icon-search"></i>
-        <span>筛选搜索</span>
-        <el-button
-          style="float:right"
-          type="primary"
-          @click="handleSearchList()"
-          size="small">
-          查询搜索
-        </el-button>
-        <el-button
-          style="float:right;margin-right: 15px"
-          @click="handleResetSearch()"
-          size="small">
-          重置
-        </el-button>
-      </div>
-      <div style="margin-top: 15px">
-        <el-form :inline="true" :model="listQuery" size="small" label-width="140px">
-          <el-form-item label="输入搜索：">
-            <el-input v-model="listQuery.keyword" class="input-width" placeholder="帐号/姓名" clearable></el-input>
-          </el-form-item>
-        </el-form>
-      </div>
-    </el-card>
+<!--    <el-card class="filter-container" shadow="never">-->
+<!--      <div>-->
+<!--        <i class="el-icon-search"></i>-->
+<!--        <span>筛选搜索</span>-->
+<!--        <el-button-->
+<!--          style="float:right"-->
+<!--          type="primary"-->
+<!--          @click="handleSearchList()"-->
+<!--          size="small">-->
+<!--          查询搜索-->
+<!--        </el-button>-->
+<!--        <el-button-->
+<!--          style="float:right;margin-right: 15px"-->
+<!--          @click="handleResetSearch()"-->
+<!--          size="small">-->
+<!--          重置-->
+<!--        </el-button>-->
+<!--      </div>-->
+<!--      <div style="margin-top: 15px">-->
+<!--        <el-form :inline="true" :model="listQuery" size="small" label-width="140px">-->
+<!--          <el-form-item label="输入搜索：">-->
+<!--            <el-input v-model="listQuery.keyword" class="input-width" placeholder="帐号/姓名" clearable></el-input>-->
+<!--          </el-form-item>-->
+<!--        </el-form>-->
+<!--      </div>-->
+<!--    </el-card>-->
     <el-card class="operate-container" shadow="never">
       <i class="el-icon-tickets"></i>
       <span>数据列表</span>
@@ -142,7 +142,7 @@
   </div>
 </template>
 <script>
-  import {fetchList,createAdmin,updateAdmin,updateStatus,deleteAdmin,getRoleByAdmin,allocRole} from '@/api/login';
+  import {fetchList,createAdmin,updateAdmin,updateStatus,deleteAdmin,getRoleByAdmin,allocRole,getTotal} from '@/api/login';
   import {fetchAllRoleList} from '@/api/role';
   import {formatDate} from '@/utils/date';
 
@@ -204,17 +204,17 @@
       handleSizeChange(val) {
         this.listQuery.pageNum = 1;
         this.listQuery.pageSize = val;
-        //this.getList();
-        let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
-        this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
-        this.listQuery.currentIndex=currentIndex
+        this.getList();
+        // let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
+        // this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
+        // this.listQuery.currentIndex=currentIndex
       },
       handleCurrentChange(val) {
         this.listQuery.pageNum = val;
-        //this.getList();
-        let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
-        this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
-        this.listQuery.currentIndex=currentIndex
+        this.getList();
+        // let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
+        // this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
+        // this.listQuery.currentIndex=currentIndex
       },
       handleAdd() {
         this.dialogVisible = true;
@@ -312,12 +312,17 @@
       },
       getList() {
         this.listLoading = true;
-        fetchList().then(response => {
+        fetchList(this.listQuery.pageNum,this.listQuery.pageSize).then(response => {
           this.listLoading = false;
-          this.totalList = response.data.data;
-          this.list = this.totalList.slice(this.listQuery.currentIndex, this.listQuery.currentIndex + this.listQuery.pageSize)
-
-          this.total = response.data.data.length;
+          //this.totalList = response.data.data;
+          //this.list = this.totalList.slice(this.listQuery.currentIndex, this.listQuery.currentIndex + this.listQuery.pageSize)
+          this.list=response.data.data
+         // this.total = response.data.data.length;
+        });
+        getTotal().then(res => {
+          if (res.data.code === '00000') {
+            this.total = res.data.data
+          }
         });
       },
       getAllRoleList() {

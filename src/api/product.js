@@ -1,8 +1,26 @@
 import request from '@/utils/request'
 
-export function fetchList() {
+export function fetchList(pageNum, pageSize) {
   return request({
     url: '/goods/allProductDetailInfo',
+    method: 'get',
+    params: {pageNum, pageSize}
+  })
+}
+
+export function fetchSelectedList(categoryName, description,
+  productName, productTypeName, supplierName) {
+  return request({
+    url: '/search/partMatch',
+    method: 'get',
+    params: {categoryName, description,
+      productName, productTypeName, supplierName}
+  })
+}
+
+export function getTotal() {
+  return request({
+    url: '/goods/allProductDetailInfo/sum',
     method: 'get',
   })
 }

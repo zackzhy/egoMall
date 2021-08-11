@@ -56,7 +56,7 @@
 </template>
 
 <script>
-  import {fetchList,deleteAddress,updateMenu,updateHidden} from '@/api/menu'
+  import {fetchList,deleteAddress,updateMenu,updateHidden,getTotal} from '@/api/menu'
 
   export default {
     name: "menuList",
@@ -98,27 +98,33 @@
       },
       getList() {
         this.listLoading = true;
-        fetchList().then(response => {
+        fetchList(this.listQuery.pageNum, this.listQuery.pageSize).then(response => {
           this.listLoading = false;
-          this.totalList = response.data.data;
-          this.list = this.totalList.slice(this.listQuery.currentIndex, this.listQuery.currentIndex + this.listQuery.pageSize)
-
-          this.total = response.data.data.length;
+          // this.totalList = response.data.data;
+          // this.list = this.totalList.slice(this.listQuery.currentIndex, this.listQuery.currentIndex + this.listQuery.pageSize)
+          this.list=response.data.data
+          //this.total = response.data.data.length;
+        });
+        getTotal().then(res => {
+          if (res.data.code === '00000') {
+            this.total = res.data.data
+          }
         });
       },
       handleSizeChange(val) {
         this.listQuery.pageNum = 1;
         this.listQuery.pageSize = val;
-        //this.getList();
-        let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
-        this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
-        this.listQuery.currentIndex = currentIndex
+        this.getList();
+        // let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
+        // this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
+        // this.listQuery.currentIndex = currentIndex
       },
       handleCurrentChange(val) {
         this.listQuery.pageNum = val;
-        let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
-        this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
-        this.listQuery.currentIndex = currentIndex
+        // let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
+        // this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
+        // this.listQuery.currentIndex = currentIndex
+        this.getList()
       },
       handleHiddenChange(index, row) {
         updateHidden(row.id,{hidden:row.hidden}).then(response=>{

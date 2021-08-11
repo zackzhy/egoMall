@@ -20,48 +20,52 @@
       </div>
       <div style="margin-top: 15px">
         <el-form :inline="true" :model="listQuery" size="small" label-width="140px">
-          <el-form-item label="输入搜索：">
-            <el-input style="width: 203px" v-model="listQuery.keyword" placeholder="商品名称"></el-input>
+          <el-form-item label="商品名称：">
+            <el-input clearable style="width: 203px" v-model="listQuery.productName" placeholder="商品名称"></el-input>
           </el-form-item>
-          <el-form-item label="商品货号：">
-            <el-input style="width: 203px" v-model="listQuery.productSn" placeholder="商品货号"></el-input>
+          <el-form-item label="品牌名称：">
+            <el-select v-model="listQuery.supplierName"
+                       placeholder="请选择品牌名称"
+                       clearable>
+              <el-option
+                v-for="item in supplierList"
+                :key="item.supplierName"
+                :label="item.supplierName"
+                :value="item.supplierName">
+              </el-option>
+            </el-select>
           </el-form-item>
           <el-form-item label="商品分类：">
-            <el-cascader
-              clearable
-              v-model="selectProductCateValue"
-              :options="productCateOptions">
-            </el-cascader>
-          </el-form-item>
-          <el-form-item label="商品品牌：">
-            <el-select v-model="listQuery.brandId" placeholder="请选择品牌" clearable>
+            <!--            <el-cascader-->
+            <!--              clearable-->
+            <!--              v-model="selectProductCateValue"-->
+            <!--              :options="productCateOptions">-->
+            <!--            </el-cascader>-->
+            <el-select v-model="listQuery.categoryName"
+                       placeholder="请选择商品分类" style="width: 203px"
+                       clearable>
               <el-option
-                v-for="item in brandOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value">
+                v-for="item in categoryList"
+                :key="item.categoryName"
+                :label="item.categoryName"
+                :value="item.categoryName">
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="上架状态：">
-            <el-select v-model="listQuery.publishStatus" placeholder="全部" clearable>
+          <el-form-item label="商品类型：">
+            <el-select v-model="listQuery.productTypeName"
+                       placeholder="请选择商品类型"
+                       clearable>
               <el-option
-                v-for="item in publishStatusOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value">
+                v-for="item in typeList"
+                :key="item.productTypeName"
+                :label="item.productTypeName"
+                :value="item.productTypeName">
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="审核状态：">
-            <el-select v-model="listQuery.verifyStatus" placeholder="全部" clearable>
-              <el-option
-                v-for="item in verifyStatusOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value">
-              </el-option>
-            </el-select>
+          <el-form-item label="商品描述：">
+            <el-input clearable style="width: 203px" v-model="listQuery.description" placeholder="商品描述"></el-input>
           </el-form-item>
         </el-form>
       </div>
@@ -80,7 +84,6 @@
       <el-table ref="productTable"
                 :data="list"
                 style="width: 100%"
-                @selection-change="handleSelectionChange"
                 v-loading="listLoading"
                 border>
         <!--        <el-table-column type="selection" width="60" align="csenter"></el-table-column>-->
@@ -154,33 +157,13 @@
         </el-table-column>
       </el-table>
     </div>
-    <!--    <div class="batch-operate-container">-->
-    <!--      <el-select-->
-    <!--        size="small"-->
-    <!--        v-model="operateType" placeholder="批量操作">-->
-    <!--        <el-option-->
-    <!--          v-for="item in operates"-->
-    <!--          :key="item.value"-->
-    <!--          :label="item.label"-->
-    <!--          :value="item.value">-->
-    <!--        </el-option>-->
-    <!--      </el-select>-->
-    <!--      <el-button-->
-    <!--        style="margin-left: 20px"-->
-    <!--        class="search-button"-->
-    <!--        @click="handleBatchOperate()"-->
-    <!--        type="primary"-->
-    <!--        size="small">-->
-    <!--        确定-->
-    <!--      </el-button>-->
-    <!--    </div>-->
     <div class="pagination-container">
       <el-pagination
         background
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         layout="total, sizes,prev, pager, next,jumper"
-        :page-size="5"
+        :page-size="listQuery.pageSize"
         :page-sizes="[5,10,15]"
         :current-page.sync="listQuery.pageNum"
         :total="total">
@@ -276,20 +259,26 @@ import {
   updatePublishStatus,
   updateProInfo,
   createProInfo,
-  deleteProduct
+  deleteProduct,
+  getTotal,
+  fetchSelectedList
 } from '@/api/product'
 import {fetchList as fetchSkuStockList, update as updateSkuStockList} from '@/api/skuStock'
 import {fetchList as fetchProductAttrList} from '@/api/productAttr'
-import {fetchList as fetchBrandList} from '@/api/brand'
-import {fetchTypeList} from '@/api/productCate'
+import {fetchList as fetchBrandList, getTotal as getBrandTotal} from '@/api/brand'
+import {fetchTypeList, getTypeTotal} from '@/api/productCate'
 import {fetchListWithChildren, fetchList as fetchCategoryList} from '@/api/productCate'
+import {fetchSelectList} from "../../../api/flashSession";
 
 const defaultListQuery = {
   keyword: null,
+  productName: "",
+  categoryName: "",
+  description: "",
+  productTypeName: "",
+  supplierName: "",
   pageNum: 1,
   pageSize: 5,
-  publishStatus: null,
-  verifyStatus: null,
   productSn: null,
   productCategoryId: null,
   brandId: null,
@@ -327,52 +316,9 @@ export default {
       typeList: [],
       supplierList: [],
       radioVal: '2',
-
-      editSkuInfo: {
-        // dialogVisible:false,
-        productId: null,
-        productSn: '',
-        productAttributeCategoryId: null,
-        stockList: [],
-        productAttr: [],
-        keyword: null
-      },
-      operates: [
-        {
-          label: "商品上架",
-          value: "publishOn"
-        },
-        {
-          label: "商品下架",
-          value: "publishOff"
-        },
-        {
-          label: "设为推荐",
-          value: "recommendOn"
-        },
-        {
-          label: "取消推荐",
-          value: "recommendOff"
-        },
-        {
-          label: "设为新品",
-          value: "newOn"
-        },
-        {
-          label: "取消新品",
-          value: "newOff"
-        },
-        {
-          label: "转移到分类",
-          value: "transferCategory"
-        },
-        {
-          label: "移入回收站",
-          value: "recycle"
-        }
-      ],
       dialogVisible: false,
       isEdit: false,
+      isSelected: false,
       proInfo: Object.assign({}, defaultProInfo),
       selectSupplierNameList: [],
       selectProductTypeNameList: [],
@@ -380,26 +326,11 @@ export default {
       operateType: null,
       listQuery: Object.assign({}, defaultListQuery),
       list: null,
+      brandTotal: 0,
+      cateTotal: 0,
+      typeTotal: 0,
       total: null,
       listLoading: true,
-      selectProductCateValue: null,
-      multipleSelection: [],
-      productCateOptions: [],
-      brandOptions: [],
-      publishStatusOptions: [{
-        value: 1,
-        label: '上架'
-      }, {
-        value: 0,
-        label: '下架'
-      }],
-      verifyStatusOptions: [{
-        value: 1,
-        label: '审核通过'
-      }, {
-        value: 0,
-        label: '未审核'
-      }]
     }
   },
   created() {
@@ -408,25 +339,7 @@ export default {
     this.getProductCateList();
     this.getTypeList();
   },
-  watch: {
-    selectProductCateValue: function (newValue) {
-      if (newValue != null && newValue.length == 2) {
-        this.listQuery.productCategoryId = newValue[1];
-      } else {
-        this.listQuery.productCategoryId = null;
-      }
 
-    }
-  },
-  filters: {
-    verifyStatusFilter(value) {
-      if (value === 1) {
-        return '审核通过';
-      } else {
-        return '未审核';
-      }
-    }
-  },
   methods: {
     filterTag(value, row) {
       if (value == '非秒杀商品') {
@@ -443,7 +356,7 @@ export default {
         type: 'warning'
       }).then(() => {
         if (this.radioVal == '2') {
-         this.proInfo.restTime=null
+          this.proInfo.restTime = null
         }
         if (this.isEdit) {
           updateProInfo(this.proInfo.productId, this.proInfo.picUrl,
@@ -452,7 +365,13 @@ export default {
             if (response.data.code === '00000') {
 
               this.$message.success(response.data.message)
-              this.getList();
+              if(this.isSelected)
+              {
+                this.getSelectedList()
+              }
+              else{
+                this.getList();
+              }
             }
             this.dialogVisible = false;
           })
@@ -463,27 +382,25 @@ export default {
             this.newPdtAddiInfo.categoryId, this.newPdtAddiInfo.supplierId).then(response => {
             if (response.data.code === '00000') {
               this.$message.success(response.data.message)
-              this.getList();
+              if(this.isSelected)
+              {
+                this.getSelectedList()
+              }
+              else{
+                this.getList();
+              }
             }
             this.dialogVisible = false;
           })
         }
       })
     },
-    getProductSkuSp(row, index) {
-      let spData = JSON.parse(row.spData);
-      if (spData != null && index < spData.length) {
-        return spData[index].value;
-      } else {
-        return null;
-      }
-    },
-    getList() {
-      this.listLoading = true;
-      fetchList().then(response => {
-          this.listLoading = false;
 
-          this.totalList = response.data.data;
+    getSelectedList() {
+      this.listLoading = true;
+      fetchSelectedList(this.listQuery.categoryName, this.listQuery.description,
+        this.listQuery.productName, this.listQuery.productTypeName, this.listQuery.supplierName).then(response => {
+          this.listLoading = false;
           for (let i = 0; i < response.data.data.length; i++) {
             if (response.data.data[i].restTime == null) {
               response.data.data[i].restTime = '非秒杀商品'
@@ -493,98 +410,91 @@ export default {
               response.data.data[i].restTime = date
             }
           }
-          console.log(this.listQuery.currentIndex)
-          this.list = this.totalList.slice(this.listQuery.currentIndex, this.listQuery.currentIndex + defaultListQuery.pageSize)
+          this.totalList = response.data.data;
+          this.total = response.data.data.length
+          this.list = this.totalList.slice(this.listQuery.currentIndex, this.listQuery.currentIndex + this.listQuery.pageSize)
+        }
+      );
+    },
 
-          this.total = response.data.data.length;
+    getList() {
+      this.listLoading = true;
+      fetchList(this.listQuery.pageNum, this.listQuery.pageSize).then(response => {
+          this.listLoading = false;
+
+
+          for (let i = 0; i < response.data.data.length; i++) {
+            if (response.data.data[i].restTime == null) {
+              response.data.data[i].restTime = '非秒杀商品'
+            } else {
+              let dateee = new Date(response.data.data[i].restTime).toJSON();
+              let date = new Date(+new Date(dateee) + 8 * 3600 * 1000).toISOString().replace(/T/g, ' ').replace(/\.[\d]{3}Z/, '');
+              response.data.data[i].restTime = date
+            }
+          }
+          this.list = response.data.data;
+          // console.log(this.listQuery.currentIndex)
+          // this.list = this.totalList.slice(this.listQuery.currentIndex, this.listQuery.currentIndex + defaultListQuery.pageSize)
+
+          // this.total = response.data.data.length;
 
 
           // console.log("total:" + this.total)
         }
-      )
-      ;
+      );
+      getTotal().then(res => {
+        if (res.data.code === '00000') {
+          this.total = res.data.data
+        }
+      });
     },
+
     getBrandList() {
-      fetchBrandList().then(res => {
+      getBrandTotal().then(res => {
         if (res.data.code === '00000') {
-          this.supplierList = res.data.data
-        }
-      })
-      // fetchBrandList({pageNum: 1, pageSize: 100}).then(response => {
-      //   this.brandOptions = [];
-      //   let brandList = response.data.list;
-      //   for (let i = 0; i < brandList.length; i++) {
-      //     this.brandOptions.push({label: brandList[i].name, value: brandList[i].id});
-      //   }
-      // });
-    }
-    ,
-    getProductCateList() {
-      fetchCategoryList().then(res => {
-        if (res.data.code === '00000') {
-          this.categoryList = res.data.data
-        }
-      })
-    },
-
-    getTypeList(){
-      fetchTypeList().then(res => {
-        if (res.data.code === '00000') {
-          this.typeList = res.data.data
-        }
-      })
-    },
-
-    handleShowSkuEditDialog(index, row) {
-      this.editSkuInfo.dialogVisible = true;
-      this.editSkuInfo.productId = row.id;
-      this.editSkuInfo.productSn = row.productSn;
-      this.editSkuInfo.productAttributeCategoryId = row.productAttributeCategoryId;
-      this.editSkuInfo.keyword = null;
-      fetchSkuStockList(row.id, {keyword: this.editSkuInfo.keyword}).then(response => {
-        this.editSkuInfo.stockList = response.data;
-      });
-      if (row.productAttributeCategoryId != null) {
-        fetchProductAttrList(row.productAttributeCategoryId, {type: 0}).then(response => {
-          this.editSkuInfo.productAttr = response.data.list;
-        });
-      }
-    }
-    ,
-    handleSearchEditSku() {
-      fetchSkuStockList(this.editSkuInfo.productId, {keyword: this.editSkuInfo.keyword}).then(response => {
-        this.editSkuInfo.stockList = response.data;
-      });
-    }
-    ,
-    handleEditSkuConfirm() {
-      if (this.editSkuInfo.stockList == null || this.editSkuInfo.stockList.length <= 0) {
-        this.$message({
-          message: '暂无sku信息',
-          type: 'warning',
-          duration: 1000
-        });
-        return
-      }
-      this.$confirm('是否要进行修改', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        updateSkuStockList(this.editSkuInfo.productId, this.editSkuInfo.stockList).then(response => {
-          this.$message({
-            message: '修改成功',
-            type: 'success',
-            duration: 1000
+          this.brandTotal = res.data.data
+          fetchBrandList(1, this.brandTotal).then(res => {
+            if (res.data.code === '00000') {
+              this.supplierList = res.data.data
+            }
           });
-          this.editSkuInfo.dialogVisible = false;
-        });
+        }
+
       });
-    }
-    ,
+    },
+    getProductCateList() {
+      fetchCategoryList(1, 100).then(res => {
+        if (res.data.code === '00000') {
+          this.cateTotal = res.data.data.length
+        }
+        fetchCategoryList(1, this.cateTotal).then(res => {
+          if (res.data.code === '00000') {
+            this.categoryList = res.data.data
+          }
+        });
+
+      });
+
+    },
+
+    getTypeList() {
+      getTypeTotal().then(res => {
+        if (res.data.code === '00000') {
+          this.typeTotal = res.data.data
+          fetchTypeList(1, this.typeTotal).then(res => {
+            if (res.data.code === '00000') {
+              this.typeList = res.data.data
+            }
+          });
+        }
+
+      });
+    },
+
     handleSearchList() {
       this.listQuery.pageNum = 1;
-      this.getList();
+      this.isSelected = true;
+      this.getSelectedList();
     }
     ,
     handleAddProduct() {
@@ -593,105 +503,41 @@ export default {
       this.proInfo = Object.assign({}, defaultProInfo);
     }
     ,
-    handleBatchOperate() {
-      if (this.operateType == null) {
-        this.$message({
-          message: '请选择操作类型',
-          type: 'warning',
-          duration: 1000
-        });
-        return;
-      }
-      if (this.multipleSelection == null || this.multipleSelection.length < 1) {
-        this.$message({
-          message: '请选择要操作的商品',
-          type: 'warning',
-          duration: 1000
-        });
-        return;
-      }
-      this.$confirm('是否要进行该批量操作?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        let ids = [];
-        for (let i = 0; i < this.multipleSelection.length; i++) {
-          ids.push(this.multipleSelection[i].id);
-        }
-        switch (this.operateType) {
-          case this.operates[0].value:
-            this.updatePublishStatus(1, ids);
-            break;
-          case this.operates[1].value:
-            this.updatePublishStatus(0, ids);
-            break;
-          case this.operates[2].value:
-            this.updateRecommendStatus(1, ids);
-            break;
-          case this.operates[3].value:
-            this.updateRecommendStatus(0, ids);
-            break;
-          case this.operates[4].value:
-            this.updateNewStatus(1, ids);
-            break;
-          case this.operates[5].value:
-            this.updateNewStatus(0, ids);
-            break;
-          case this.operates[6].value:
-            break;
-          case this.operates[7].value:
-            this.updateDeleteStatus(1, ids);
-            break;
-          default:
-            break;
-        }
-        this.getList();
-      });
-    }
-    ,
+
     handleSizeChange(val) {
       this.listQuery.pageNum = 1;
       this.listQuery.pageSize = val;
-      //this.getList();
-      let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
-      this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
-      this.listQuery.currentIndex = currentIndex
-    }
-    ,
+      if (this.isSelected) {
+        let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
+        this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
+        this.listQuery.currentIndex = currentIndex
+      } else {
+        this.getList()
+      }
+    },
+
     handleCurrentChange(val) {
       this.listQuery.pageNum = val;
-      //this.getList();
-      let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
-      this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
-      this.listQuery.currentIndex = currentIndex
-    }
-    ,
-    handleSelectionChange(val) {
-      this.multipleSelection = val;
-    }
-    ,
-    handlePublishStatusChange(index, row) {
-      let ids = [];
-      ids.push(row.id);
-      this.updatePublishStatus(row.publishStatus, ids);
-    }
-    ,
-    handleNewStatusChange(index, row) {
-      let ids = [];
-      ids.push(row.id);
-      this.updateNewStatus(row.newStatus, ids);
-    }
-    ,
-    handleRecommendStatusChange(index, row) {
-      let ids = [];
-      ids.push(row.id);
-      this.updateRecommendStatus(row.recommandStatus, ids);
-    }
-    ,
+      if (this.isSelected) {
+        let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
+        console.log(currentIndex)
+        this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
+        this.listQuery.currentIndex = currentIndex
+      } else {
+        this.getList();
+      }
+    },
+
     handleResetSearch() {
       this.selectProductCateValue = [];
-      this.listQuery = Object.assign({}, defaultListQuery);
+      this.listQuery.description=''
+      this.listQuery.productName=''
+      this.listQuery.supplierName=''
+      this.listQuery.categoryName=''
+      this.listQuery.productTypeName=''
+      this.isSelected=false
+      this.listQuery.pageNum=1
+      this.getList()
     }
     ,
     handleDelete(index, row) {
@@ -724,75 +570,11 @@ export default {
       }
     }
     ,
-    handleShowProduct(index, row) {
-      console.log("handleShowProduct", row);
-    }
-    ,
-    handleShowVerifyDetail(index, row) {
-      console.log("handleShowVerifyDetail", row);
-    }
-    ,
-    handleShowLog(index, row) {
-      console.log("handleShowLog", row);
-    }
-    ,
-    updatePublishStatus(publishStatus, ids) {
-      let params = new URLSearchParams();
-      params.append('ids', ids);
-      params.append('publishStatus', publishStatus);
-      updatePublishStatus(params).then(response => {
-        this.$message({
-          message: '修改成功',
-          type: 'success',
-          duration: 1000
-        });
-      });
-    }
-    ,
-    updateNewStatus(newStatus, ids) {
-      let params = new URLSearchParams();
-      params.append('ids', ids);
-      params.append('newStatus', newStatus);
-      updateNewStatus(params).then(response => {
-        this.$message({
-          message: '修改成功',
-          type: 'success',
-          duration: 1000
-        });
-      });
-    }
-    ,
-    updateRecommendStatus(recommendStatus, ids) {
-      let params = new URLSearchParams();
-      params.append('ids', ids);
-      params.append('recommendStatus', recommendStatus);
-      updateRecommendStatus(params).then(response => {
-        this.$message({
-          message: '修改成功',
-          type: 'success',
-          duration: 1000
-        });
-      });
-    }
-    ,
-    updateDeleteStatus(deleteStatus, ids) {
-      let params = new URLSearchParams();
-      params.append('ids', ids);
-      params.append('deleteStatus', deleteStatus);
-      updateDeleteStatus(params).then(response => {
-        this.$message({
-          message: '删除成功',
-          type: 'success',
-          duration: 1000
-        });
-      });
-      this.getList();
-    }
   }
 }
 </script>
 <style>
-.pagination-container{
+.pagination-container {
   margin-bottom: 26px;
 }
 

@@ -1,70 +1,70 @@
 <template> 
   <div class="app-container">
-    <el-card class="filter-container" shadow="never">
-      <div>
-        <i class="el-icon-search"></i>
-        <span>筛选搜索</span>
-        <el-button
-          style="float:right"
-          type="primary"
-          @click="handleSearchList()"
-          size="small">
-          查询搜索
-        </el-button>
-        <el-button
-          style="float:right;margin-right: 15px"
-          @click="handleResetSearch()"
-          size="small">
-          重置
-        </el-button>
-      </div>
-      <div style="margin-top: 15px">
-        <el-form :inline="true" :model="listQuery" size="small" label-width="140px">
-          <el-form-item label="输入搜索：">
-            <el-input v-model="listQuery.orderSn" class="input-width" placeholder="订单编号"></el-input>
-          </el-form-item>
-          <el-form-item label="收货人：">
-            <el-input v-model="listQuery.receiverKeyword" class="input-width" placeholder="收货人姓名/手机号码"></el-input>
-          </el-form-item>
-          <el-form-item label="提交时间：">
-            <el-date-picker
-              class="input-width"
-              v-model="listQuery.createTime"
-              value-format="yyyy-MM-dd"
-              type="date"
-              placeholder="请选择时间">
-            </el-date-picker>
-          </el-form-item>
-          <el-form-item label="订单状态：">
-            <el-select v-model="listQuery.status" class="input-width" placeholder="全部" clearable>
-              <el-option v-for="item in statusOptions"
-                         :key="item.value"
-                         :label="item.label"
-                         :value="item.value">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="订单分类：">
-            <el-select v-model="listQuery.orderType" class="input-width" placeholder="全部" clearable>
-              <el-option v-for="item in orderTypeOptions"
-                         :key="item.value"
-                         :label="item.label"
-                         :value="item.value">
-              </el-option>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="订单来源：">
-            <el-select v-model="listQuery.sourceType" class="input-width" placeholder="全部" clearable>
-              <el-option v-for="item in sourceTypeOptions"
-                         :key="item.value"
-                         :label="item.label"
-                         :value="item.value">
-              </el-option>
-            </el-select>
-          </el-form-item>
-        </el-form>
-      </div>
-    </el-card>
+<!--    <el-card class="filter-container" shadow="never">-->
+<!--      <div>-->
+<!--        <i class="el-icon-search"></i>-->
+<!--        <span>筛选搜索</span>-->
+<!--        <el-button-->
+<!--          style="float:right"-->
+<!--          type="primary"-->
+<!--          @click="handleSearchList()"-->
+<!--          size="small">-->
+<!--          查询搜索-->
+<!--        </el-button>-->
+<!--        <el-button-->
+<!--          style="float:right;margin-right: 15px"-->
+<!--          @click="handleResetSearch()"-->
+<!--          size="small">-->
+<!--          重置-->
+<!--        </el-button>-->
+<!--      </div>-->
+<!--      <div style="margin-top: 15px">-->
+<!--        <el-form :inline="true" :model="listQuery" size="small" label-width="140px">-->
+<!--          <el-form-item label="输入搜索：">-->
+<!--            <el-input v-model="listQuery.orderSn" class="input-width" placeholder="订单编号"></el-input>-->
+<!--          </el-form-item>-->
+<!--          <el-form-item label="收货人：">-->
+<!--            <el-input v-model="listQuery.receiverKeyword" class="input-width" placeholder="收货人姓名/手机号码"></el-input>-->
+<!--          </el-form-item>-->
+<!--          <el-form-item label="提交时间：">-->
+<!--            <el-date-picker-->
+<!--              class="input-width"-->
+<!--              v-model="listQuery.createTime"-->
+<!--              value-format="yyyy-MM-dd"-->
+<!--              type="date"-->
+<!--              placeholder="请选择时间">-->
+<!--            </el-date-picker>-->
+<!--          </el-form-item>-->
+<!--          <el-form-item label="订单状态：">-->
+<!--            <el-select v-model="listQuery.status" class="input-width" placeholder="全部" clearable>-->
+<!--              <el-option v-for="item in statusOptions"-->
+<!--                         :key="item.value"-->
+<!--                         :label="item.label"-->
+<!--                         :value="item.value">-->
+<!--              </el-option>-->
+<!--            </el-select>-->
+<!--          </el-form-item>-->
+<!--          <el-form-item label="订单分类：">-->
+<!--            <el-select v-model="listQuery.orderType" class="input-width" placeholder="全部" clearable>-->
+<!--              <el-option v-for="item in orderTypeOptions"-->
+<!--                         :key="item.value"-->
+<!--                         :label="item.label"-->
+<!--                         :value="item.value">-->
+<!--              </el-option>-->
+<!--            </el-select>-->
+<!--          </el-form-item>-->
+<!--          <el-form-item label="订单来源：">-->
+<!--            <el-select v-model="listQuery.sourceType" class="input-width" placeholder="全部" clearable>-->
+<!--              <el-option v-for="item in sourceTypeOptions"-->
+<!--                         :key="item.value"-->
+<!--                         :label="item.label"-->
+<!--                         :value="item.value">-->
+<!--              </el-option>-->
+<!--            </el-select>-->
+<!--          </el-form-item>-->
+<!--        </el-form>-->
+<!--      </div>-->
+<!--    </el-card>-->
     <el-card class="operate-container" shadow="never">
       <i class="el-icon-tickets"></i>
       <span>数据列表</span>
@@ -151,7 +151,7 @@
         layout="total, sizes,prev, pager, next,jumper"
         :current-page.sync="listQuery.pageNum"
         :page-size="listQuery.pageSize"
-        :page-sizes="[5,10,15]"
+        :page-sizes="[8,10,15]"
         :total="total">
       </el-pagination>
     </div>
@@ -175,13 +175,13 @@
   </div>
 </template>
 <script>
-import {fetchList, closeOrder, deleteOrder} from '@/api/order'
+import {fetchList, closeOrder, deleteOrder, getTotal} from '@/api/order'
 import {formatDate} from '@/utils/date';
 import LogisticsDialog from '@/views/oms/order/components/logisticsDialog';
 
 const defaultListQuery = {
   pageNum: 1,
-  pageSize: 5,
+  pageSize: 8,
   orderSn: null,
   receiverKeyword: null,
   status: null,
@@ -381,17 +381,17 @@ export default {
     handleSizeChange(val) {
       this.listQuery.pageNum = 1;
       this.listQuery.pageSize = val;
-      //this.getList();
-      let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
-      this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
-      this.listQuery.currentIndex = currentIndex
+      this.getList();
+      // let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
+      // this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
+      // this.listQuery.currentIndex = currentIndex
     },
     handleCurrentChange(val) {
       this.listQuery.pageNum = val;
-      //this.getList();
-      let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
-      this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
-      this.listQuery.currentIndex = currentIndex
+      this.getList();
+      // let currentIndex = (this.listQuery.pageNum - 1) * this.listQuery.pageSize
+      // this.list = this.totalList.slice(currentIndex, currentIndex + this.listQuery.pageSize)
+      // this.listQuery.currentIndex = currentIndex
     },
     handleCloseOrderConfirm() {
       if (this.closeOrder.content == null || this.closeOrder.content === '') {
@@ -418,20 +418,24 @@ export default {
     },
     getList() {
       this.listLoading = true;
-      fetchList().then(response => {
+      fetchList(this.listQuery.pageNum, this.listQuery.pageSize).then(response => {
           this.listLoading = false;
-          this.totalList = response.data.data;
-          this.list = this.totalList.slice(this.listQuery.currentIndex, this.listQuery.currentIndex + defaultListQuery.pageSize)
+          this.list = response.data.data;
+          // this.list = this.totalList.slice(this.listQuery.currentIndex, this.listQuery.currentIndex + defaultListQuery.pageSize)
           for (let i = 0; i < response.data.data.length; i++) {
             let dateee = new Date(response.data.data[i].payTime).toJSON();
             let date = new Date(+new Date(dateee) + 8 * 3600 * 1000).toISOString().replace(/T/g, ' ').replace(/\.[\d]{3}Z/, '');
             response.data.data[i].payTime = date
           }
 
-          this.total = response.data.data.length;
+          //this.total = response.data.data.length;
         }
-      )
-      ;
+      );
+      getTotal().then(res => {
+        if (res.data.code === '00000') {
+          this.total = res.data.data
+        }
+      });
     },
     deleteOrder(ids) {
       this.$confirm('是否要进行该删除操作?', '提示', {

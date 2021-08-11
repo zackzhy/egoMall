@@ -9,6 +9,13 @@ export function login(account, password) {
   })
 }
 
+export function getTotal() {
+  return request({
+    url: '/user/sum',
+    method: 'get',
+  })
+}
+
 export function getInfo() {
   return request({
     url: '/user/info',
@@ -23,10 +30,11 @@ export function logout() {
   })
 }
 
-export function fetchList() {
+export function fetchList(pageNum, pageSize) {
   return request({
     url: '/user',
     method: 'get',
+    params: {pageNum,pageSize}
   })
 }
 

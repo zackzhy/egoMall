@@ -1,8 +1,17 @@
 import request from '@/utils/request'
-export function fetchList() {
+export function fetchList(pageNum, pageSize) {
+  console.log(pageSize)
   return request({
     url:'/order/all',
-    method:'get'
+    method:'get',
+    params: {pageNum, pageSize}
+  })
+}
+
+export function getTotal() {
+  return request({
+    url: '/order/all/sum',
+    method: 'get',
   })
 }
 
